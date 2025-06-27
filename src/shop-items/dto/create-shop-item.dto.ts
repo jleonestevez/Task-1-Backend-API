@@ -1,40 +1,25 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsPositive, IsArray, IsInt } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class CreateShopItemDto {
-  @ApiProperty({ 
-    description: 'The title of the shop item',
-    example: 'Gaming Laptop' 
-  })
+  @ApiProperty({ example: 'Laptop' })
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @ApiPropertyOptional({ 
-    description: 'The description of the shop item',
-    example: 'High-performance gaming laptop with RGB keyboard' 
-  })
+  @ApiPropertyOptional({ example: 'Portátil ultraligero' })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ 
-    description: 'The price of the shop item',
-    example: 1299.99 
-  })
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @ApiProperty({ example: 999.99 })
+  @IsNumber()
   @IsPositive()
-  @Type(() => Number)
   price: number;
 
-  @ApiPropertyOptional({ 
-    description: 'Array of category IDs that this shop item belongs to',
-    example: [1, 2],
-    type: [Number] 
-  })
+  @ApiPropertyOptional({ example: [1, 2] })
   @IsArray()
-  @IsInt({ each: true })
+  @IsNumber({}, { each: true })
   @IsOptional()
   categoryIds?: number[];
-}
+} 

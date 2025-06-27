@@ -1,146 +1,80 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+import { Order } from './order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order } from './entities/order.entity';
-import { OrderItem } from './entities/order-item.entity';
-import { Customer } from '../customers/entities/customer.entity';
-import { ShopItem } from '../shop-items/entities/shop-item.entity';
+import { Customer } from '../customers/customer.entity';
+import { ShopItem } from '../shop-items/shop-item.entity';
+import { OrderItem } from './order-item.entity';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-    @InjectRepository(OrderItem)
-    private readonly orderItemRepository: Repository<OrderItem>,
+    private readonly ordersRepository: Repository<Order>,
     @InjectRepository(Customer)
-    private readonly customerRepository: Repository<Customer>,
+    private readonly customersRepository: Repository<Customer>,
     @InjectRepository(ShopItem)
-    private readonly shopItemRepository: Repository<ShopItem>,
+    private readonly itemsRepository: Repository<ShopItem>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
-    const { customerId, items } = createOrderDto;
+  async create(dto: CreateOrderDto): Promise<Order> {
+    const customer = await this.customersRepository.findOne({ where: { id: dto.customerId } });
+    if (!customer) throw new NotFoundException('Customer not found');
 
-    // Verify customer exists
-    const customer = await this.customerRepository.findOne({
-      where: { id: customerId },
-    });
-    if (!customer) {
-      throw new NotFoundException(`Customer with ID ${customerId} not found`);
-    }
+    const order = this.ordersRepository.create({ customer });
 
-    // Create order
-    const order = this.orderRepository.create({ customer });
-    const savedOrder = await this.orderRepository.save(order);
+    const orderItems: OrderItem[] = [];
+    for (const itemDto of dto.items) {
+      const shopItem = await this.itemsRepository.findOne({ where: { id: itemDto.shopItemId } });
+      if (!shopItem) throw new NotFoundException(`Shop item ${itemDto.shopItemId} not found`);
 
-    // Create order items
-    const orderItems = [];
-    for (const itemDto of items) {
-      const shopItem = await this.shopItemRepository.findOne({
-        where: { id: itemDto.shopItemId },
-      });
-      if (!shopItem) {
-        throw new NotFoundException(`Shop item with ID ${itemDto.shopItemId} not found`);
-      }
-
-      const orderItem = this.orderItemRepository.create({
-        order: savedOrder,
-        shopItem,
-        quantity: itemDto.quantity,
-      });
+      const orderItem = new OrderItem();
+      orderItem.shopItem = shopItem;
+      orderItem.quantity = itemDto.quantity;
       orderItems.push(orderItem);
     }
+    order.items = orderItems;
 
-    await this.orderItemRepository.save(orderItems);
-
-    // Return order with items
-    return this.findOne(savedOrder.id);
+    return this.ordersRepository.save(order);
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
-    const skip = (page - 1) * limit;
-    
-    const [data, total] = await this.orderRepository.findAndCount({
-      relations: ['customer', 'items', 'items.shopItem'],
-      skip,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
-
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-      hasNext: page < Math.ceil(total / limit),
-      hasPrev: page > 1,
-    };
+  findAll(): Promise<Order[]> {
+    return this.ordersRepository.find();
   }
 
   async findOne(id: number): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: ['customer', 'items', 'items.shopItem'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
-
+    const order = await this.ordersRepository.findOne({ where: { id } });
+    if (!order) throw new NotFoundException(`Order #${id} not found`);
     return order;
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async update(id: number, dto: UpdateOrderDto): Promise<Order> {
     const order = await this.findOne(id);
-    const { customerId, items } = updateOrderDto;
+    // currently, only allow updating items list or nothing; for simplicity, not implemented fully
+    if (dto.items) {
+      // remove existing items
+      order.items = [];
+      await this.ordersRepository.save(order);
 
-    // Update customer if provided
-    if (customerId) {
-      const customer = await this.customerRepository.findOne({
-        where: { id: customerId },
-      });
-      if (!customer) {
-        throw new NotFoundException(`Customer with ID ${customerId} not found`);
+      const newItems: OrderItem[] = [];
+      for (const itemDto of dto.items) {
+        const shopItem = await this.itemsRepository.findOne({ where: { id: itemDto.shopItemId } });
+        if (!shopItem) throw new NotFoundException(`Shop item ${itemDto.shopItemId} not found`);
+        const orderItem = new OrderItem();
+        orderItem.shopItem = shopItem;
+        orderItem.quantity = itemDto.quantity;
+        newItems.push(orderItem);
       }
-      order.customer = customer;
+      order.items = newItems;
     }
-
-    // Update items if provided
-    if (items) {
-      // Remove existing order items
-      await this.orderItemRepository.delete({ order: { id } });
-
-      // Create new order items
-      const orderItems = [];
-      for (const itemDto of items) {
-        const shopItem = await this.shopItemRepository.findOne({
-          where: { id: itemDto.shopItemId },
-        });
-        if (!shopItem) {
-          throw new NotFoundException(`Shop item with ID ${itemDto.shopItemId} not found`);
-        }
-
-        const orderItem = this.orderItemRepository.create({
-          order,
-          shopItem,
-          quantity: itemDto.quantity,
-        });
-        orderItems.push(orderItem);
-      }
-
-      await this.orderItemRepository.save(orderItems);
-    }
-
-    await this.orderRepository.save(order);
-    return this.findOne(id);
+    return this.ordersRepository.save(order);
   }
 
   async remove(id: number): Promise<void> {
     const order = await this.findOne(id);
-    await this.orderRepository.remove(order);
+    await this.ordersRepository.remove(order);
   }
-}
+} 

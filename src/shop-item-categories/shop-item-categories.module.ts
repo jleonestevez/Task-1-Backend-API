@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ShopItemCategory } from './shop-item-category.entity';
 import { ShopItemCategoriesService } from './shop-item-categories.service';
 import { ShopItemCategoriesController } from './shop-item-categories.controller';
-import { ShopItemCategory } from './entities/shop-item-category.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ShopItemCategory])],
@@ -10,4 +10,4 @@ import { ShopItemCategory } from './entities/shop-item-category.entity';
   providers: [ShopItemCategoriesService],
   exports: [ShopItemCategoriesService],
 })
-export class ShopItemCategoriesModule {}
+export class ShopItemCategoriesModule {} 

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { ShopItem } from './shop-item.entity';
 import { ShopItemsService } from './shop-items.service';
 import { ShopItemsController } from './shop-items.controller';
-import { ShopItem } from './entities/shop-item.entity';
-import { ShopItemCategory } from '../shop-item-categories/entities/shop-item-category.entity';
+import { ShopItemCategory } from '../shop-item-categories/shop-item-category.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ShopItem, ShopItemCategory])],
@@ -11,4 +12,4 @@ import { ShopItemCategory } from '../shop-item-categories/entities/shop-item-cat
   providers: [ShopItemsService],
   exports: [ShopItemsService],
 })
-export class ShopItemsModule {}
+export class ShopItemsModule {} 

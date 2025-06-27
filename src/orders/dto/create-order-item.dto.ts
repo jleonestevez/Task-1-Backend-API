@@ -1,23 +1,13 @@
-import { IsInt, IsPositive, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsPositive } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class CreateOrderItemDto {
-  @ApiProperty({ 
-    description: 'The ID of the shop item',
-    example: 1 
-  })
-  @IsInt()
-  @IsNotEmpty()
-  @Type(() => Number)
+  @ApiProperty({ example: 3 })
+  @IsNumber()
   shopItemId: number;
 
-  @ApiProperty({ 
-    description: 'The quantity of the shop item',
-    example: 2 
-  })
-  @IsInt()
+  @ApiProperty({ example: 2 })
+  @IsNumber()
   @IsPositive()
-  @Type(() => Number)
   quantity: number;
-}
+} 
