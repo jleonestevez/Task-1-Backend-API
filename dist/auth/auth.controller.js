@@ -25,6 +25,13 @@ let AuthController = class AuthController {
     async login(req) {
         return this.authService.login(req.user);
     }
+    getProfile(req) {
+        return {
+            message: 'Autenticación exitosa',
+            user: req.user,
+            timestamp: new Date().toISOString()
+        };
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -46,6 +53,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Get)('profile'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOkResponse)({ description: 'User profile information' }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getProfile", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('auth'),
     (0, common_1.Controller)('auth'),

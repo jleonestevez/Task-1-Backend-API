@@ -30,6 +30,9 @@ let UsersService = class UsersService {
         const user = this.usersRepository.create({ username: dto.username, password: hashed });
         return this.usersRepository.save(user);
     }
+    async findAll() {
+        return this.usersRepository.find();
+    }
     async findByUsername(username) {
         return this.usersRepository.findOne({ where: { username } });
     }

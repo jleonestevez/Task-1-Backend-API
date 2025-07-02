@@ -135,34 +135,58 @@ MIT © 2025
 
 ---
 
-## Autenticación y ejemplos de uso
+## Autenticación JWT y pruebas desde Swagger
 
-Todas las rutas (excepto `POST /users` y `POST /auth/login`) requieren un token JWT mediante el header `Authorization: Bearer <token>`.
+Todas las rutas (excepto `POST /users` y `POST /auth/login`) requieren autenticación JWT mediante el header:
 
-1. Registrar usuario
-```bash
-curl -X POST http://localhost:3000/users \
-     -H "Content-Type: application/json" \
-     -d '{ "username": "demo", "password": "secret123" }'
+```
+Authorization: Bearer <token>
 ```
 
-2. Login y obtención de token
-```bash
-TOKEN=$(curl -s -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{ "username": "demo", "password": "secret123" }' | jq -r .access_token)
-```
+### Prueba paso a paso desde Swagger
 
-3. Llamar a endpoints protegidos
-```bash
-# Crear cliente
-curl -X POST http://localhost:3000/customers \
-     -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" \
-     -d '{ "name": "Ada", "surname": "Lovelace", "email": "ada@lovelace.dev" }'
+1. **Registrar usuario**
+   - Ve a `/api` (Swagger UI).
+   - Busca `POST /users` → "Try it out".
+   - Payload de ejemplo:
+     ```json
+     {
+       "username": "demo",
+       "password": "secret123"
+     }
+     ```
+   - Haz "Execute".
 
-# Listar artículos
-curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/shop-items
-```
+2. **Login y obtención de token**
+   - Busca `POST /auth/login` → "Try it out".
+   - Usa el mismo payload.
+   - Haz "Execute" y copia SOLO el valor de `access_token` de la respuesta.
 
-También puedes usar la UI Swagger: abre `http://localhost:3000/api`, pulsa el botón **Authorize**, pega el token y prueba los endpoints.
+3. **Autorizar en Swagger**
+   - Haz clic en el botón "Authorize" (candado arriba a la derecha).
+   - Pega el token (sin "Bearer", solo el string).
+   - Haz "Authorize" y "Close".
+
+4. **Consumir endpoints protegidos**
+   - Por ejemplo, `GET /customers` → "Try it out" → "Execute".
+   - Si el token es válido, verás la respuesta (no un 401).
+
+### Troubleshooting (si ves 401 Unauthorized)
+
+- Asegúrate de pegar solo el token, sin espacios ni "Bearer".
+- Verifica en la pestaña "Request" de Swagger que el header sea:
+  ```
+  Authorization: Bearer <tu-token>
+  ```
+- Si el token está expirado, repite el login.
+- Si cambiaste el código, reinicia el backend y refresca Swagger (Ctrl+F5).
+- Prueba también con curl:
+  ```bash
+  curl -H "Authorization: Bearer <tu-token>" http://localhost:3000/customers
+  ```
+
+Si el curl funciona pero Swagger no, el problema es de la UI Swagger (cache, token viejo, etc).
+
+---
+
+También puedes consultar y probar todos los endpoints desde la UI Swagger: abre `http://localhost:3000/api`, pulsa el botón **Authorize**, pega el token y prueba los endpoints protegidos.

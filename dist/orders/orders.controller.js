@@ -81,6 +81,7 @@ __decorate([
 ], OrdersController.prototype, "remove", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, swagger_1.ApiTags)('orders'),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])
 ], OrdersController);

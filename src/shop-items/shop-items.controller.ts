@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { ShopItemsService } from './shop-items.service';
 import { CreateShopItemDto } from './dto/create-shop-item.dto';
@@ -15,6 +15,7 @@ import { UpdateShopItemDto } from './dto/update-shop-item.dto';
 import { ShopItem } from './shop-item.entity';
 
 @ApiTags('shop-items')
+@ApiBearerAuth()
 @Controller('shop-items')
 export class ShopItemsController {
   constructor(private readonly itemsService: ShopItemsService) {}

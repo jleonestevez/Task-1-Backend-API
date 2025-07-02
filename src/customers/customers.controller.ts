@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -15,6 +15,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Customer } from './customer.entity';
 
 @ApiTags('customers')
+@ApiBearerAuth()
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}

@@ -81,6 +81,7 @@ __decorate([
 ], ShopItemsController.prototype, "remove", null);
 exports.ShopItemsController = ShopItemsController = __decorate([
     (0, swagger_1.ApiTags)('shop-items'),
+    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('shop-items'),
     __metadata("design:paramtypes", [shop_items_service_1.ShopItemsService])
 ], ShopItemsController);
